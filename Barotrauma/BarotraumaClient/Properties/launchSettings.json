@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "WindowsClient": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
+    "MacClient": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
+    "LinuxClient": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

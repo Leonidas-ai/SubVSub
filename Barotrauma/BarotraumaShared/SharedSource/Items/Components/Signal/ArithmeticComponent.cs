@@ -1,0 +1,101 @@
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Globalization;
+using System.Xml.Linq;
+
+namespace Barotrauma.Items.Components
+{
+    abstract class ArithmeticComponent : ItemComponent
+    {
+        //an array to keep track of how long ago a signal was received on both inputs
+        protected float[] timeSinceReceived;
+
+        protected float[] receivedSignal;
+
+        //the output is sent if both inputs have received a signal within the timeframe
+        protected float timeFrame;
+
+        protected readonly Character[] signalSender = new Character[2];
+
+        [Serialize(999999.0f, IsPropertySaveable.Yes, description: "The output of the item is restricted below this value.", alwaysUseInstanceValues: true),
+            InGameEditable(MinValueFloat = -999999.0f, MaxValueFloat = 999999.0f)]
+        public float ClampMax
+        {
+            get;
+            set;
+        }
+
+        [Serialize(-999999.0f, IsPropertySaveable.Yes, description: "The output of the item is restricted above this value.", alwaysUseInstanceValues: true),
+            InGameEditable(MinValueFloat = -999999.0f, MaxValueFloat = 999999.0f)]
+        public float ClampMin
+        {
+            get;
+            set;
+        }
+
+        [InGameEditable(DecimalCount = 2),
+            Serialize(0.0f, IsPropertySaveable.Yes, description: "The item must have received signals to both inputs within this timeframe to output the result." +
+            " If set to 0, the inputs must be received at the same time.", alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public float TimeFrame
+        {
+            get { return timeFrame; }
+            set
+            {
+                if (value > timeFrame)
+                {
+                    timeSinceReceived[0] = timeSinceReceived[1] = Math.Max(value * 2.0f, 0.1f);
+                }
+                timeFrame = Math.Max(0.0f, value);
+            }
+        }
+
+        public ArithmeticComponent(Item item, ContentXElement element)
+            : base(item, element)
+        {
+            timeSinceReceived = new float[] { Math.Max(timeFrame * 2.0f, 0.1f), Math.Max(timeFrame * 2.0f, 0.1f) };
+            receivedSignal = new float[2];
+        }
+
+        sealed public override void Update(float deltaTime, Camera cam)
+        {
+            bool deactivate = true;
+            bool earlyReturn = false;
+            for (int i = 0; i < timeSinceReceived.Length; i++)
+            {
+                deactivate &= timeSinceReceived[i] > timeFrame;
+                earlyReturn |= timeSinceReceived[i] > timeFrame;
+                timeSinceReceived[i] += deltaTime;
+            }
+            // only stop Update() if both signals timed-out. if IsActive == false, then the component stops updating.
+            IsActive = !deactivate;
+            // early return if either of the signal timed-out
+            if (earlyReturn) { return; }
+            float output = Calculate(receivedSignal[0], receivedSignal[1]);
+            if (MathUtils.IsValid(output))
+            {
+                item.SendSignal(new Signal(MathHelper.Clamp(output, ClampMin, ClampMax).ToString("G", CultureInfo.InvariantCulture), sender: signalSender[0] ?? signalSender[1]), "signal_out");
+            }           
+        }
+
+        protected abstract float Calculate(float signal1, float signal2);
+
+        public override void ReceiveSignal(Signal signal, Connection connection)
+        {
+            switch (connection.Name)
+            {
+                case "signal_in1":
+                    float.TryParse(signal.value, NumberStyles.Float, CultureInfo.InvariantCulture, out receivedSignal[0]);
+                    signalSender[0] = signal.sender;
+                    timeSinceReceived[0] = 0.0f;
+                    IsActive = true;
+                    break;
+                case "signal_in2":
+                    float.TryParse(signal.value, NumberStyles.Float, CultureInfo.InvariantCulture, out receivedSignal[1]);
+                    signalSender[1] = signal.sender;
+                    timeSinceReceived[1] = 0.0f;
+                    IsActive = true;
+                    break;
+            }
+        }
+    }
+}
