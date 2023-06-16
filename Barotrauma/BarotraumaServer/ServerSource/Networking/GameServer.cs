@@ -2,6 +2,7 @@
 using Barotrauma.IO;
 using Barotrauma.Items.Components;
 using Barotrauma.Steam;
+using FarseerPhysics.Dynamics;
 using Lidgren.Network;
 using Microsoft.Xna.Framework;
 using System;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 
@@ -3116,8 +3118,7 @@ namespace Barotrauma.Networking
                 if (counter == timer)
                 {
                     counter = 0;
-
-                    if (connectedClients.Any(c => (c.Character?.IsDead ?? true) && c.InGame))
+                    if (connectedClients.Any(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame))
                     {
                         int rays = 0;
                         List<Submarine> subs = new List<Submarine> { Submarine.MainSub };
@@ -3184,7 +3185,7 @@ namespace Barotrauma.Networking
                         names = "";
 
                         List<string> doneMonsters = new List<string>();
-                        Client readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
+                        Client readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
                         while (readyMonster != null && GameStarted)
                         {
                             if (index1 == 0)
@@ -3997,8 +3998,8 @@ namespace Barotrauma.Networking
                                 "!suicide -- Kills your character. Use if lost or stuck. \n" +
                                 "!findcoal -- Get the direction of the coalition submarine. \n" +
                                 "!findsep -- Get the direction of the separatist submarine. \n" +
-                                "!stopspec -- Leave spectator group and allows becoming a monster or human \n" +
-                                "!startspec -- Join spectator group to ensure only spawning as a monster \n" +
+                                "!stopspec -- Leave spectator group to allow becoming a monster or human \n" +
+                                "!startspec -- Join spectator group to prevent becoming a monster or human \n" +
                                 "!tip -- Send helpful hints for new players \n" +
                                 "!respawn -- Add any players who are not alive and not in spec team \n" +
                                 "!removeop -- Remove dangerous and unbalanced items \n" +
@@ -4021,8 +4022,8 @@ namespace Barotrauma.Networking
                                 "!suicide -- Kills your character. Use if lost or stuck. \n" +
                                 "!findcoal -- Get the direction of the coalition submarine. \n" +
                                 "!findsep -- Get the direction of the separatist submarine. \n" +
-                                "!stopspec -- Leave spectator group and allows becoming a monster or human \n" +
-                                "!startspec -- Join spectator group to ensure only spawning as a monster", senderClient, ChatMessageType.MessageBox);
+                                "!stopspec -- Leave spectator group to allow becoming a monster or human \n" +
+                                "!startspec -- Join spectator group to prevent becoming a monster or human \n", senderClient, ChatMessageType.MessageBox);
                             }
                             break;
                         case "respawn":
@@ -4055,6 +4056,52 @@ namespace Barotrauma.Networking
                             }
                             else { SendDirectChatMessage("Respawning players failed!", senderClient, ChatMessageType.MessageBox); }
                             break;
+
+                        case "baroroyale":
+                            if (senderClient.HasPermission(ClientPermissions.Ban))
+                            {
+                                List<Client> players = connectedClients.Where(c => c.Character?.IsHuman != false && c.InGame && c.Character != null && c.Character?.IsDead != true).ToList();
+
+                                if (players.Any())
+                                {
+                                    Vector2 centroid = players.Select(c => c.Character.WorldPosition).Aggregate(Vector2.Zero, (acc, pos) => acc + pos) / players.Count;
+
+                                    Client furthestPlayer = players.Aggregate((max, current) => Vector2.Distance(current.Character.WorldPosition, centroid) > Vector2.Distance(max.Character.WorldPosition, centroid) ? current : max);
+
+                                    float explosionRange = 10f;
+                                    float explosionForce = 1000f;
+                                    float explosionDamage = 100f;
+                                    float explosionStructureDamage = 0f;
+                                    float explosionItemDamage = 0f;
+                                    float explosionEMPStrength = 0f;
+                                    float explosionBallastFloraStrength = 0f;
+                                    Vector2 explosionPosition = furthestPlayer.Character.WorldPosition;
+                                    Explosion explosion = new Explosion(
+                                        explosionRange,
+                                        explosionForce,
+                                        explosionDamage,
+                                        explosionStructureDamage,
+                                        explosionItemDamage,
+                                        explosionEMPStrength,
+                                        explosionBallastFloraStrength
+                                    );
+                                    explosion.Explode(explosionPosition, null);
+
+                                    GameMain.Server.SendChatMessage(furthestPlayer.Character.Name + " has been vaporized!", ChatMessageType.Error);
+                                    SendDirectChatMessage("Furthest player killed!", senderClient, ChatMessageType.MessageBox);
+                                }
+                                else
+                                {
+                                    SendDirectChatMessage("No players to kill!", senderClient, ChatMessageType.MessageBox);
+                                }
+                            }
+                            else
+                            {
+                                SendDirectChatMessage("Baro Royale mode failed!", senderClient, ChatMessageType.MessageBox);
+                            }
+                            break;
+
+
                         case "removeop":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
