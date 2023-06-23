@@ -37,7 +37,7 @@ namespace Barotrauma.Networking
 
         private readonly List<Client> connectedClients = new List<Client>();
 
-        //for keeping track of disconnected clients in case the reconnect shortly after
+        //for keeping track of disconnected clients in case the reconnect shortly after test
         private readonly List<Client> disconnectedClients = new List<Client>();
 
         //keeps track of players who've previously been playing on the server
