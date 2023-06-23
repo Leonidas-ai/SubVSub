@@ -11,7 +11,8 @@ namespace Barotrauma
         {
             List<Character> availableSpeakers = Character.CharacterList.FindAll(c =>
                 c.AIController is HumanAIController &&
-                !c.IsDead);
+                !c.IsDead &&
+                c.SpeechImpediment <= 100.0f);
 
             foreach (Client client in GameMain.Server.ConnectedClients)
             {

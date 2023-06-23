@@ -16,7 +16,8 @@ namespace Barotrauma.Steam
             {
                 GamePort = (ushort)server.Port,
                 QueryPort = isPublic ? (ushort)server.QueryPort : (ushort)0,
-                Mode = isPublic ? Steamworks.InitServerMode.Authentication : Steamworks.InitServerMode.NoAuthentication
+                Mode = isPublic ? Steamworks.InitServerMode.Authentication : Steamworks.InitServerMode.NoAuthentication,
+                IpAddress = server.ServerSettings.ListenIPAddress
             };
             //options.QueryShareGamePort();
 
@@ -56,9 +57,7 @@ namespace Barotrauma.Steam
             Steamworks.SteamServer.SetKey("haspassword", server.ServerSettings.HasPassword.ToString());
             Steamworks.SteamServer.SetKey("message", server.ServerSettings.ServerMessageText);
             Steamworks.SteamServer.SetKey("version", GameMain.Version.ToString());
-            //Steamworks.SteamServer.SetKey("playercount", server.ConnectedClients.Count.ToString());
-            Steamworks.SteamServer.SetKey("playercount", (server.ConnectedClients.Count + 2).ToString());
-
+            Steamworks.SteamServer.SetKey("playercount", server.ConnectedClients.Count.ToString());
             int index = 0;
             foreach (var contentPackage in contentPackages)
             {
