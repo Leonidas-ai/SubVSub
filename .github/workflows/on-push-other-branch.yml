@@ -4,7 +4,7 @@ name: On push to a secondary branch
 
 on:
   push:
-    branches-ignore: [master]
+    branches-ignore: [main]
     paths-ignore:
       - ".github/**"
       - "*.md"

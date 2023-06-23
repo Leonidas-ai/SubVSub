@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: On push to master branch
+name: On push to main branch
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths-ignore:
       - ".github/**"
       - "*.md"
