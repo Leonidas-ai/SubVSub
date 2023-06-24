@@ -37,7 +37,7 @@ namespace Barotrauma.Networking
 
         private readonly List<Client> connectedClients = new List<Client>();
 
-        //for keeping track of disconnected clients in case the reconnect shortly after test
+        //for keeping track of disconnected clients in case the reconnect shortly after
         private readonly List<Client> disconnectedClients = new List<Client>();
 
         //keeps track of players who've previously been playing on the server
@@ -3210,7 +3210,7 @@ namespace Barotrauma.Networking
                         names = "";
 
                         List<string> doneMonsters = new List<string>();
-                        Client readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
+                        Client readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
                         while (readyMonster != null && GameStarted)
                         {
                             if (index1 == 0)
@@ -3218,7 +3218,7 @@ namespace Barotrauma.Networking
                                 names = names + readyMonster.Name + ", ";
                                 doneMonsters.Add(readyMonster.AccountId.ToString());
                                 yield return new WaitForSeconds(2);
-                                readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
+                                readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
                             }
                             else
                             {
@@ -3229,7 +3229,7 @@ namespace Barotrauma.Networking
                                 names = names + readyMonster.Name + ", ";
                                 doneMonsters.Add(readyMonster.AccountId.ToString());
                                 yield return new WaitForSeconds(2);
-                                readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
+                                readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
                             }
                         }
                         if (names != "")
