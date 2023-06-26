@@ -139,7 +139,7 @@ namespace Barotrauma.Items.Components
         public bool CanReceive(WifiComponent sender)
         {
             if (sender == null || sender.channel != channel) { return false; }
-            //if (sender.TeamID != TeamID && !AllowCrossTeamCommunication) { return false; }
+            if (sender.TeamID != TeamID && !AllowCrossTeamCommunication) { return false; }
 
             //if the component is not linked to chat and has nothing connected to the output, sending a signal to it does nothing
             // = no point in receiving

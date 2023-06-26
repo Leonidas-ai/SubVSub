@@ -143,7 +143,7 @@ namespace Barotrauma.Networking
 
             if (type == ChatMessageType.Order)
             {
-                if (c.Character == null || c.Character.IsDead) { return; }
+                if (c.Character == null || c.Character.SpeechImpediment >= 100.0f || c.Character.IsDead) { return; }
                 if (orderMsg.Order.IsReport)
                 {
                     HumanAIController.ReportProblem(orderMsg.Sender, orderMsg.Order);

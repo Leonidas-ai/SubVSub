@@ -154,7 +154,7 @@ namespace Barotrauma
         public int MinNumber
         {
             get;
-            set;
+            private set;
         }
 
         [Serialize(0.0f, IsPropertySaveable.No, description: "Minimum amount of karma a player must have to get assigned this job.")]
