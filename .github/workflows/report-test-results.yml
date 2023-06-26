@@ -8,7 +8,7 @@ name: Report test results
 on:
   workflow_run:
     workflows:
-      - On push to master branch
+      - On push to main branch
       - On push to a secondary branch
       - On push to a PR
     types: [completed]
