@@ -159,7 +159,7 @@ namespace Barotrauma
             GameModes = GameModePreset.List.ToArray();
         }
         
-        private List<SubmarineInfo> subs;
+        public List<SubmarineInfo> subs;
         public IReadOnlyList<SubmarineInfo> GetSubList() => subs;
 
         public void AddSub(SubmarineInfo sub)

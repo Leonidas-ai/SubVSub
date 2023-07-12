@@ -355,9 +355,9 @@ RegisterBarotrauma("TextPack")
 
 local descriptor = RegisterBarotrauma("NetLobbyScreen")
 
-if SERVER then
-    LuaUserData.MakeFieldAccessible(descriptor, "subs")
-end
+--if SERVER then
+--    LuaUserData.MakeFieldAccessible(descriptor, "subs")
+--end
 
 RegisterBarotrauma("EventManager")
 RegisterBarotrauma("EventManagerSettings")

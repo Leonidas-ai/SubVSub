@@ -159,6 +159,35 @@ namespace Barotrauma.Networking
             return command;
         }
 
+
+        public static string GetSpecialChatMessageCommand(string message, out string messageWithoutCommand)
+        {
+            messageWithoutCommand = message;
+
+            if (message[0] != '!') return "";
+
+            int separatorIndex = message.IndexOf(" ");
+
+            if (separatorIndex == -1) { separatorIndex = message.Length - 1; }
+
+            string command = "";
+            try
+            {
+                command = message.Substring(1, separatorIndex);
+                command = command.Trim();
+            }
+
+            catch
+            {
+                return command;
+            }
+
+            messageWithoutCommand = message.Substring(separatorIndex + 1, message.Length - separatorIndex - 1).TrimStart();
+
+            return command;
+        }
+
+
         /// <summary>
         /// How much messages sent by <paramref name="sender"/> should get garbled. Takes the distance between the entities and optionally the obstructions between them into account (see <paramref name="obstructionMultiplier"/>).
         /// </summary>
