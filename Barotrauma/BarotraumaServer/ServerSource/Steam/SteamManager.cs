@@ -59,7 +59,7 @@ namespace Barotrauma.Steam
             Steamworks.SteamServer.SetKey("version", GameMain.Version.ToString());
             //Steamworks.SteamServer.SetKey("playercount", server.ConnectedClients.Count.ToString());
             if (server.ConnectedClients.Count == 0) { Steamworks.SteamServer.SetKey("playercount", server.ConnectedClients.Count.ToString()); }
-            else { Steamworks.SteamServer.SetKey("playercount", (server.ConnectedClients.Count + 4).ToString()); }
+            else { Steamworks.SteamServer.SetKey("playercount", (server.ConnectedClients.Count + 2).ToString()); }
 
             int index = 0;
             foreach (var contentPackage in contentPackages)

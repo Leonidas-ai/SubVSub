@@ -4446,17 +4446,18 @@ namespace Barotrauma.Networking
                             break;
                         case "alive":
 
-                            string alive = "";
-
-                            List<Client> players = connectedClients.Where(c => c.InGame).ToList();
-
-                            if (players.Any())
+                            if (connectedClients.Any())
                             {
+                                string alive = "";
                                 foreach (Client c in connectedClients)
                                 {
                                     string status = "";
                                     status = status + c.Name;
-                                    if (c.Character?.IsDead ?? true)
+                                    if (c.Character == null)
+                                    {
+                                        status = status + " oooo ";
+                                    }
+                                    else if (c.Character?.IsDead ?? true)
                                     {
                                         status = status + " ---- ";
                                     }
@@ -4464,9 +4465,9 @@ namespace Barotrauma.Networking
                                     {
                                         status = status + " ++++ ";
                                     }
-                                    status = status + " " + $"{(c.Character?.SpeciesName ?? "None")}";
-                                    status = status + " " + c.TeamID;
-                                    alive = status + "\n";
+                                    status = status + " " + $"{c.Character?.SpeciesName ?? "None"}";
+                                    status = status + " " + $"{c.TeamID.ToString() ?? "None"}";
+                                    alive = alive + status + "\n";
 
                                 }
                                 SendDirectChatMessage(alive, senderClient, ChatMessageType.MessageBox);

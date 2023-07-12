@@ -70,7 +70,10 @@ namespace Barotrauma
         public float ImpactTolerance { get; set; }
 
         [Serialize(true, IsPropertySaveable.Yes, description: "Can the creature enter submarine. Creatures that cannot enter submarines, always collide with it, even when there is a gap."), Editable()]
-        public bool CanEnterSubmarine { get; set; }
+        public bool CanEnterSubmarine {
+            get;
+            set;
+        }
 
         [Serialize(true, IsPropertySaveable.Yes), Editable]
         public bool CanWalk { get; set; }
