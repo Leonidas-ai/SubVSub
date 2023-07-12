@@ -2570,14 +2570,14 @@ namespace Barotrauma.Networking
             roundStartTime = DateTime.Now;
 
             GameMain.LuaCs.Hook.Call("roundStart");
-            CoroutineManager.StopCoroutines("StartMonsters");
+            CoroutineManager.StartCoroutine(CoMonsters(), "CoMonsters");
 
             startGameCoroutine = null;
             yield return CoroutineStatus.Success;
         }
 
 
-        private IEnumerable<CoroutineStatus> StartBaroroyale()
+        private IEnumerable<CoroutineStatus> CoBaroyale()
         {
             int counter = 0;
             int timer = 10;
@@ -2623,6 +2623,7 @@ namespace Barotrauma.Networking
                     }
                 }
             }
+            CoroutineManager.StopCoroutines("CoBaroyale");
             yield return CoroutineStatus.Success;
         }
 
@@ -2630,7 +2631,7 @@ namespace Barotrauma.Networking
 
         private Random rnd = new Random();
 
-        private IEnumerable<CoroutineStatus> StartMonsters()
+        private IEnumerable<CoroutineStatus> CoMonsters()
         {
             /*
              
@@ -3338,11 +3339,9 @@ namespace Barotrauma.Networking
                 }
             }
             GameMain.Server.SendChatMessage("Monsters have stopped spawning. When in game, type a command with " +
-                "an exclamation point into the chatbox to use it. Available chat commands include:\n" +
-                "!help, !suicide, !findcoal, !findsep, !stopspec, !startspec\n" +
-                "To learn more about chatbox commands, type !help (don't forget the exclamation) " +
-                "in the chatbox.", ChatMessageType.Error);
-            CoroutineManager.StopCoroutines("StartMonsters");
+                "an exclamation point into the chatbox to use it. To learn more about chatbox commands, " +
+                "type !help (don't forget the exclamation) in the chatbox.", ChatMessageType.Error);
+            CoroutineManager.StopCoroutines("CoMonsters");
             yield return CoroutineStatus.Success;
         }
 
@@ -4157,7 +4156,8 @@ namespace Barotrauma.Networking
                                 "!spawnpet -- Spawns a player as a pet\n" +
                                 "!startmonster -- Begin the monster spawning script\n" +
                                 "!stopmonster -- End the monster spawning script\n" +
-                                "!startbaroyale -- Kills fleeing players", senderClient, ChatMessageType.MessageBox);
+                                "!startbaroyale -- Kill fleeing players \n" +
+                                "!stopbaroyale -- End the bloodletting", senderClient, ChatMessageType.MessageBox);
                             }
                             else
                             {
@@ -4378,22 +4378,30 @@ namespace Barotrauma.Networking
                         case "startmonster":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
-                                CoroutineManager.StopCoroutines("StartMonsters");
-                                CoroutineManager.StartCoroutine(StartMonsters(), "StartMonsters");
+                                CoroutineManager.StopCoroutines("CoMonsters");
+                                CoroutineManager.StartCoroutine(CoMonsters(), "CoMonsters");
                                 GameMain.Server.SendChatMessage("Monster spawning was restarted.", ChatMessageType.Error);
                             }
                             break;
                         case "stopmonster":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
-                                CoroutineManager.StopCoroutines("StartMonsters");
+                                CoroutineManager.StopCoroutines("CoMonsters");
                                 GameMain.Server.SendChatMessage("Monster spawning was interrupted.", ChatMessageType.Error);
                             }
                             break;
-                        case "baroroyale":
+                        case "startbaroyale":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
-                                CoroutineManager.StartCoroutine(StartBaroroyale(), "StartBaroroyale");
+                                CoroutineManager.StartCoroutine(CoBaroyale(), "CoBaroyale");
+                                GameMain.Server.SendChatMessage("Baroyale has begun! Let the blood flow! " +
+                                    "The furthest player from the enemy will be vaporized!", ChatMessageType.Error);                            }
+                            break;
+                        case "stopbaroyale":
+                            if (senderClient.HasPermission(ClientPermissions.Ban))
+                            {
+                                CoroutineManager.StopCoroutines("CoBaroyale");
+                                GameMain.Server.SendChatMessage("Baroyorale has ended.", ChatMessageType.Error);
                             }
                             break;
                         case "spawnpet":
@@ -4445,7 +4453,6 @@ namespace Barotrauma.Networking
                             else { SendDirectChatMessage("You don't have permission to add subs!", senderClient, ChatMessageType.MessageBox); }
                             break;
                         case "alive":
-
                             if (connectedClients.Any())
                             {
                                 string alive = "";
