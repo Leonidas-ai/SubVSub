@@ -19,6 +19,11 @@ using Sigil;
 using System.Reflection;
 using Steamworks;
 using System.Net.Http;
+using static HarmonyLib.Code;
+using Steamworks.ServerList;
+using Steamworks.Ugc;
+using HarmonyLib;
+using System.Collections;
 
 namespace Barotrauma.Networking
 {
@@ -2580,7 +2585,7 @@ namespace Barotrauma.Networking
         private IEnumerable<CoroutineStatus> CoBaroyale()
         {
             int counter = 0;
-            int timer = 10;
+            int timer = 30;
 
             while (GameStarted)
             {
@@ -2623,6 +2628,7 @@ namespace Barotrauma.Networking
                     }
                 }
             }
+            GameMain.Server.SendChatMessage("Baroyale is complete.", ChatMessageType.Error);
             CoroutineManager.StopCoroutines("CoBaroyale");
             yield return CoroutineStatus.Success;
         }
@@ -2633,555 +2639,171 @@ namespace Barotrauma.Networking
 
         private IEnumerable<CoroutineStatus> CoMonsters()
         {
-            /*
-             
-            string[] xeno = {
-            "Xeno",
-            "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger", "Facehugger",
+
+            Dictionary<string, float> alien = new Dictionary<string, float>
+            {
+                { "fractalguardian_emp", 10f },
+                { "fractalguardian", 20f },
+                { "fractalguardian2", 20f },
+                { "fractalguardian3", 20f },
+                { "guardianrepairbot", 20f },
+                { "ancient", 50f },
+                { "legacyfractalguardian", 50f },
+                { "legacyfractalguardian2", 50f },
+                { "swarmfeeder", 50f },
             };
 
-            string[] xanhusk = {
-            "Carrierleviathan",
-            "Huskbroodemperor",
-            "Endwormre",
-            "Huskbroodmother",
-            "CoelanthRe",
-            "Bomber", "Bomber",
-            "Juggernaut", "Juggernaut",
-            "Huskrioter", "Huskrioter",
-            "Huskslasher", "Huskslasher",
-            "Huskartifactfaraday", "Huskartifactfaraday",
-            "Huskartifactgeneral", "Huskartifactgeneral",
-            "Huskartifactnasonov", "Huskartifactnasonov",
-            "Huskartifactpsychosis", "Huskartifactpsychosis",
-            "Huskartifactskyholder", "Huskartifactskyholder",
-            "Huskartifactthermal", "Huskartifactthermal",
-            "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser", "Paralyser",
-            "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector", "Huskinfector",
-            "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet", "Crawlercrablet",
-            "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet", "Crawlerjumplet",
-            "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet", "Helmetcrablet",
-            "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet", "Helmetjumplet",
-            "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn", "Huskhammerspawn",
+            Dictionary<string, float> baby = new Dictionary<string, float>
+            {
+                { "mudraptor_hatchling", 1f },
+                { "crawler_hatchling", 1f },
+                { "tigerthresher_hatchling", 1f },
+                { "balloon", 1f },
+                { "orangeboy", 1f },
+                { "psilotoad", 1f },
+                { "peanut", 1f },
+                { "hammerheadspawn", 1f },
+                { "mudraptor_pet", 1f },
             };
 
-            string[] xancreature = {
-            "Bossmoloch",
-            "Mudbouncer",
-            "Observer",
-            "Voidstalker",
-            "Hydrathresher",
-            "Charybdisre",
-            "Mudspitter", "Mudspitter",
-            "Xanothresher", "Xanothresher",
-            "Immortal", "Immortal",
-            "Faradaycrab", "Faradaycrab",
-            "Nasonov", "Nasonov",
-            "Psychosiscrab", "Psychosiscrab",
-            "Skyholdercrab", "Skyholdercrab",
-            "Thermalcrab", "Thermalcrab",
-            "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger", "Xan_scavenger",
-            "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora", "Bruteflora",
-            "FractalGuardianRe",  "FractalGuardianRe",
-            "FractalGuardianRe2", "FractalGuardianRe2",
-            "FractalGuardianRe3", "FractalGuardianRe3",
-            "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher", "Lionthresher",
-            "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech", "Voidleech",
+            Dictionary<string, float> crawler = new Dictionary<string, float>
+            {
+                { "crawlerbroodmother_m", 1f },
+                { "crawlerbroodmother", 2f },
+                { "bonethresher", 10f },
+                { "crawler_large", 20f },
+                { "crawlerhusk", 40f },
+                { "crawler", 60f },
             };
 
-            
-            string[] undersea = {
-                "Rockworm",
-                "Mine",
-                "Endwhale",
-                "Dreadnought"
+            Dictionary<string, float> mudraptor = new Dictionary<string, float>
+            {
+                { "mudraptor_veteran", 1f },
+                { "mudraptor", 2f },
+                { "mudraptor_unarmored", 3f },
+                { "mudraptor_passive", 4f },
+                { "mudraptor_pet", 5f },
+                { "mudraptor_hatchling", 20f },
             };
 
-            string[] othercreature = {
-            "AlphaCharybdis",
-            "AlphaEndworm",
-            "Hotdog",
-            "Shark",
-            "Thalamid",
-            "Mantisbig",
-            "Wastemoloch",
-            "Crawlermother", "Crawlermother",  "Crawlermother", "Crawlermother",
-            "Mothercrawler", "Mothercrawler", "Mothercrawler",  "Mothercrawler",
-            "Wastebonethresher", "Wastebonethresher", "Wastebonethresher", "Wastebonethresher",
-            "Abyssalhammerhead", "Abyssalhammerhead", "Abyssalhammerhead", "Abyssalhammerhead",
-            "Abyssalmantis", "Abyssalmantis",  "Abyssalmantis",  "Abyssalmantis",
-            "Wastemantis", "Wastemantis", "Wastemantis",  "Wastemantis",
-            "Teleglitch", "Teleglitch",  "Teleglitch",  "Teleglitch",  "Teleglitch",
-            "Mutantcrawler", "Mutantcrawler",  "Mutantcrawler",  "Mutantcrawler", "Mutantcrawler", "Mutantcrawler",  "Mutantcrawler",  "Mutantcrawler",
-            "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler", "Wastecrawler",
-            "Abyssalthresher", "Abyssalthresher", "Abyssalthresher", "Abyssalthresher", "Abyssalthresher", "Abyssalthresher", "Abyssalthresher", "Abyssalthresher",
-            "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher", "Wastetigerthresher",
-            "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim", "Wastevictim",
-            };
-                  
-
-            string[] hidden = {
-                "Hd_flier",
-                "Hd_worm",
-                "Hd_worm2"
+            Dictionary<string, float> hammerhead = new Dictionary<string, float>
+            {
+                { "hammerhead_mNamed", 1f },
+                { "Hammerhead_m", 2f },
+                { "hammerheadmatriarch", 3f },
+                { "hammerheadgold", 4f },
+                { "hammerhead", 5f },
+                { "hammerheadspawn", 100f },
             };
 
-
-            string[] monsterpack = {
-            "Archimorur",
-            "Bloodsquid", "Bloodsquid", "Bloodsquid", "Bloodsquid", "Bloodsquid", "Bloodsquid",
-            "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker", "Husker",
-            "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga", "Minoga",
-            };
-
-
-            string[] extended = {
-            "Epicentrum",
-            "Voidleviathan",
-            "Thalamuscarrier",
-            "Shadowwhale",
-            "Fractaldestroyer", "Fractaldestroyer",
-            "Charybdissmall", "Charybdissmall",
-            "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer", "Stonewanderer",
-            "Paralyticshark", "Paralyticshark", "Paralyticshark", "Paralyticshark", "Paralyticshark", "Paralyticshark","Paralyticshark", "Paralyticshark", "Paralyticshark", "Paralyticshark", "Paralyticshark",
-            "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier", "Turretcarrier",
-            "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel", "Thermaleel",
-            "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab", "Icecrab",
-            "Brainmoss1", "Brainmoss1", "Brainmoss1", "Brainmoss1", "Brainmoss1", "Brainmoss1",
-            "Brainmoss2", "Brainmoss2", "Brainmoss2", "Brainmoss2", "Brainmoss2", "Brainmoss2",
-            "Brainmoss3", "Brainmoss3", "Brainmoss3", "Brainmoss3", "Brainmoss3", "Brainmoss3",
-            "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva",
-            "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva", "Magmalarva",
-            "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm",
-            "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm", "Magmaworm",
-            "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech",
-            "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech", "Shadowleech",
-            "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp",
-            "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp", "Coralshrimp",
-             };
-
-                             
-            string[] improved = {
-            "Molochhusk",
-            "Watcherhusk",
-            "Bonethresherhusk",
-            "Coelanthhusk",
-            "Hammerheadgoldhusk",
-            "Hammerheadhusk",
-            "Hammerheadmatriarchhusk",
-            "Huskmutantbonethresher",
-            "Huskmutantcocoonbonethresher",
-            "Huskmutantcocooncrawler",
-            "Huskmutantarmored",
-            "Huskmutanthunter",
-            "Humanshambler",
-            "Huskmutantmudraptor",
-            "Mantishusk",
-            "Mudraptor_hatchlinghusk",
-            "Mudraptor_unarmoredhusk",
-            "Mudraptorhusk",
-            "Swarmcrawlerhusk",  "Swarmcrawlerhusk",
-            "Orangeboyhusk", "Orangeboyhusk",
-            "Peanuthusk", "Peanuthusk",
-            "Psilotoadhusk", "Psilotoadhusk",
-            "Spinelinghusk", "Spinelinghusk",
-            "Tigerthresher_hatchlinghusk", "Tigerthresher_hatchlinghusk",
-            "Tigerthresherhusk", "Tigerthresherhusk",
-            "Crawler_hatchlinghusk", "Crawler_hatchlinghusk",
-            "Crawlerhusk", "Crawlerhusk",
-            "Hammerheadspawnhusk", "Hammerheadspawnhusk",
-            "Humanhusk", "Humanhusk",
-            "Humanhuskabyssdiver", "Humanhuskabyssdiver",
-            "Humanhuskcombatdiver", "Humanhuskcombatdiver",
-            "humanhuskold", "humanhuskold",
-            "Huskabyssold", "Huskabyssold",
-            "Huskcombatold", "Huskcombatold",
-            "Huskmutantcrawler",  "Huskmutantcrawler",
-            "Huskmutanthuman", "Huskmutanthuman",
-            "Huskmutanthumantorso", "Huskmutanthumantorso",
-            "Huskmutanthumantorso", "Huskmutanthumantorso",
-            "Huskmutanttigerthresher", "Huskmutanttigerthresher",
-            "Huskold", "Huskold",
-            "Legacycrawlerhusk", "Legacycrawlerhusk",
-            "Molochbabyhusk", "Molochbabyhusk",
-            };
-
-            string[] deadspace = {
-            "Dwarfmoon",
-            "EnhancedSlasher", "EnhancedSlasher", "EnhancedSlasher", "EnhancedSlasher", "EnhancedSlasher",
-            "Slasher2", "Slasher2", "Slasher2", "Slasher2", "Slasher2", "Slasher2",
-            "Slasher", "Slasher", "Slasher", "Slasher", "Slasher", "Slasher",
-            "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider", "Humandivider",
-            "Infector", "Infector", "Infector", "Infector", "Infector", "Infector", "Infector", "Infector", "Infector", "Infector",
-            "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler", "Deadcrawler",
-            "Divider", "Divider", "Divider", "Divider", "Divider", "Divider", "Divider", "Divider", "Divider", "Divider", "Divider",
-
-            "BloodSucker",
-            "Bug",
-            "DevilFish",
-            "Glowfish",
-            "Glowfishhusk",
-            "GoofyFish",
-            "Hullfish",
-            "Hullfishhusk",
-            "Hullparasite",
-            "ImpFish",
-            "Irma",
-            "Irmahusk",
-            "MudraptorGray",
-            "PiraFish",
-            "Punkfish",
-            "Punkfishhusk",
-            "RedFish",
-            "SkeletonFish",
-            "Slime",
-            "Thrasher",
-            "Thrasherhusk",
-            "ToothFish",
-            "VoidFish",
-            "WhiteFish",
-            };
-
-            string[] soma = {
-            "Viper",
-            "Angler",
-            "Gulper",
-            "Construct",
-            "Scavenger", "Scavenger", "Scavenger", "Scavenger",
-            "Kate", "Kate", "Kate", "Kate",
-            "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler", "Waucrawler",
-
-            "BloodSucker",
-            "Bug",
-            "DevilFish",
-            "Glowfish",
-            "Glowfishhusk",
-            "GoofyFish",
-            "Hullfish",
-            "Hullfishhusk",
-            "Hullparasite",
-            "ImpFish",
-            "Irma",
-            "Irmahusk",
-            "MudraptorGray",
-            "PiraFish",
-            "Punkfish",
-            "Punkfishhusk",
-            "RedFish",
-            "SkeletonFish",
-            "Slime",
-            "Thrasher",
-            "Thrasherhusk",
-            "ToothFish",
-            "VoidFish",
-            "WhiteFish",
-            };
-
-            string[] survivator = {
-
-            "BloodSucker",
-            "Bug",
-            "DevilFish",
-            "Glowfish",
-            "Glowfishhusk",
-            "GoofyFish",
-            "Hullfish",
-            "Hullfishhusk",
-            "Hullparasite",
-            "ImpFish",
-            "Irma",
-            "Irmahusk",
-            "MudraptorGray",
-            "PiraFish",
-            "Punkfish",
-            "Punkfishhusk",
-            "RedFish",
-            "SkeletonFish",
-            "Slime",
-            "Thrasher",
-            "Thrasherhusk",
-            "ToothFish",
-            "VoidFish",
-            "WhiteFish",
-
-            "Babymoloch",
-            "BloodSucker",
-            "Bug",
-            "CharybdisRex",
-            "CharybdisUgly",
-            "CoelanthFish",
-            "DevilFish",
-            "Glowfish",
-            "Glowfishhusk",
-            "GoofyFish",
-            "Hullfish",
-            "Hullfishhusk",
-            "Hullparasite",
-            "IceWhale",
-            "ImpFish",
-            "Irma",
-            "Irmahusk",
-            "MudraptorGray",
-            "PiraFish",
-            "Punkfish",
-            "Punkfishhusk",
-            "RedFish",
-            "SkeletonFish",
-            "Slime",
-            "Thrasher",
-            "Thrasherhusk",
-            "TigerSharkThresher",
-            "ToothFish",
-            "TyranoMudraptor",
-            "VoidFish",
-            "WatcherLegacy",
-            "WhiteFish",
-            };
-            string[] xen = {
-                "Armoredheadcrab",
-                "Fastheadcrab",
-                "Headcrab",
-                "Humanacrab",
-                "HumanCrab",
-                "Humanelectric",
-                "Humanfcrab",
-                "Humanjeff",
-                "Humanpcrab",
-                "Humanstalker",
-                "Lightningdog",
-                "Manhack",
-                "Playablecrawler",
-                "Poisonheadcrab",
-                "Scanner",
-                "Snark",
-            };
-
-                        */
-
-            string[] hope = { "nada" };
-            string[] randos = {
-            "jove",
-            "latcher",
-            "cyborgworm",
-            "endworm",
-            "legacyendworm",
-            "portalguardian",
-            "spineling_giant",
-            "molochblack",
-            "moloch_m",
-            "moloch",
-            "legacymoloch",
-            "watcher",
-            "crawlerbroodmother_m",
-            "crawlerbroodmother",
-            "mudraptor_veteran", "mudraptor_veteran",
-            "crawler_large", "crawler_large",
-            "charybdisold", "charybdisold",
-            "legacycharybdis", "legacycharybdis",
-            "carrier", "carrier",
-            "hammerhead_mNamed", "hammerhead_mNamed",
-            "hammerheadgold_m", "hammerheadgold_m",
-            "ancient", "ancient", "ancient",  "ancient",
-            "hammerhead_m", "hammerhead_m", "hammerhead_m", "hammerhead_m",
-            "hammerheadmatriarch", "hammerheadmatriarch", "hammerheadmatriarch", "hammerheadmatriarch", "hammerheadmatriarch",
-            "legacytigerthresher", "legacytigerthresher", "legacytigerthresher", "legacytigerthresher", "legacytigerthresher",
-            "coelanth", "coelanth", "coelanth", "coelanth", "coelanth",
-            "bonethresher", "bonethresher", "bonethresher", "bonethresher", "bonethresher", "bonethresher", "bonethresher", "bonethresher",
-            "hammerheadgold", "hammerheadgold", "hammerheadgold", "hammerheadgold", "hammerheadgold", "hammerheadgold", "hammerheadgold", "hammerheadgold",
-            "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead", "hammerhead",
-            "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher", "legacywatcher",
-            "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby", "molochbaby",
-            "fractalguardian3", "fractalguardian3", "fractalguardian3", "fractalguardian3",
-            "fractalguardian_emp", "fractalguardian_emp", "fractalguardian_emp", "fractalguardian_emp",
-            "fractalguardian", "fractalguardian", "fractalguardian", "fractalguardian",
-            "fractalguardian2", "fractalguardian2", "fractalguardian2", "fractalguardian2",
-            "mantis", "mantis", "mantis", "mantis", "mantis",
-            "mudraptor", "mudraptor", "mudraptor", "mudraptor",
-            "mudraptor_unarmored", "mudraptor_unarmored", "mudraptor_unarmored", "mudraptor_unarmored",
-            "mudraptor_passive", "mudraptor_passive", "mudraptor_passive", "mudraptor_passive",
-            "mudraptor_pet", "mudraptor_pet", "mudraptor_pet", "mudraptor_pet",
-            "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian",
-            "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2",
-            "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler",  "swarmcrawler",
-            "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk",
-            "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler",
-            "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher",
-            "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling",
-            "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk",
-            "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk",
-            "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk",
-            "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler",
-            "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling",
-            "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling",
-            "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling",
-            "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte",
-            "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell",
-            "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon", "balloon",
-            "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy", "orangeboy",
-            "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad", "psilotoad",
-            "peanut", "peanut", "peanut", "peanut", "peanut", "peanut", "peanut", "peanut", "peanut", "peanut", "peanut",  "peanut", "peanut", "peanut", "peanut", "peanut",
-            "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot", "guardianrepairbot",
-            "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot", "defensebot",
-            "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn",
-            "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer",
-            "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder", "swarmfeeder",
-            };
-            string[] crawler = {
-            "crawlerbroodmother",
-            "bonethresher",
-            "crawler_large", "crawler_large",
-            "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler",
-            "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk",
-            "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler",
-            "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler", "crawler",
-            };
-            string[] mudraptor = {
-            "mudraptor_veteran",
-            "mudraptor", "mudraptor",
-            "mudraptor_unarmored", "mudraptor_unarmored",
-            "mudraptor_passive", "mudraptor_passive", "mudraptor_passive", "mudraptor_passive",
-            "mudraptor_pet", "mudraptor_pet", "mudraptor_pet", "mudraptor_pet", "mudraptor_pet", 
-            "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling",
-            "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling",
-            };
-            string[] mantis = {
-            "mantis",
-            "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler",
-            };
-            string[] hammerheadspawn = {
-            "hammerheadgold",
-            "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn",
-            "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn",
-            "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn", "hammerheadspawn",
-            };
-            string[] husk = {
-            "carrier",
-            "humanhusk", "humanhusk", "humanhusk", "humanhusk","humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk","humanhusk", "humanhusk", "humanhusk", "humanhusk",
-            "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk", "husk",
-            "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk",
-            "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer", "huskcontainer",
-            };
-            string[] small = {
-            "molochbaby", "legacyfractalguardian", "legacyfractalguardian2", "swarmcrawler", "crawlerhusk",
-            "crawler", "tigerthresher", "spineling", "humanhusk", "husk", "legacyhusk", "legacycrawler",
-            "mudraptor_hatchling", "crawler_hatchling", "tigerthresher_hatchling", "leucocyte", "terminalcell",
-            "balloon", "orangeboy", "psilotoad", "peanut", "hammerheadspawn", "swarmfeeder", "huskcontainer",
-            "guardianrepairbot", "defensebot",
-            };
-            string[] aggressive = {
-            "crawlerbroodmother",
-            "spineling_giant",
-            "mudraptor_veteran",
-            "hammerhead_m",
-            "hammerhead",
-            "hammerheadgold",
-            "bonethresher",
-            "fractalguardian",
-            "fractalguardian2",
-            "mantis",
-            "mudraptor_veteran",
-            "mudraptor",
-            "mudraptor_unarmored",
-            "mudraptor_passive",
-            "crawler_large", "crawler_large",
-            "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler", "swarmcrawler",
-            "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk", "crawlerhusk",
-            "crawler", "crawler", "crawler", "crawler", "crawler",
-            "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher", "tigerthresher",
-            "spineling", "spineling", "spineling", "spineling", "spineling", "spineling",
-            "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk", "humanhusk",
-            "husk", "husk", "husk", "husk", "husk", "husk",
-            "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk", "legacyhusk",
-            "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler", "legacycrawler",
-            "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling", "mudraptor_hatchling",
-            "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling", "crawler_hatchling",
-            "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling",
-            "leucocyte", "leucocyte", "leucocyte", "leucocyte", "leucocyte",
-            "terminalcell", "terminalcell", "terminalcell", "terminalcell", "terminalcell",
-            };
-            string[] thresher = {
-            "tigerthresher",
-            "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling", "tigerthresher_hatchling",
-            };
-            string[] spineling = {
-            "spineling_giant",
-            "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling",
-            "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling",
-            "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling", "spineling",
-            };
-            string[] cell = {
-            "leucocyte",
-            "terminalcell", "terminalcell", "terminalcell", "terminalcell",
-            };
-            string[] alien = {
-            "fractalguardian3", "fractalguardian_emp", "fractalguardian", "fractalguardian2",
-            "guardianrepairbot",  "guardianrepairbot",
-            "ancient", "ancient", "ancient", "ancient",
-            "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian", "legacyfractalguardian",
-            "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2", "legacyfractalguardian2",
-            };
-            string[] swarmfeeder = {
-            "swarmfeeder"
-            };
-            string[] huskcontainer = {
-            "huskcontainer",
-            };
-            string[] baby = {
-            "mudraptor_hatchling",
-            "crawler_hatchling",
-            "tigerthresher_hatchling",
-            "balloon",
-            "orangeboy",
-            "psilotoad",
-            "peanut",
-            "hammerheadspawn",
-            "mudraptor_pet",
-            };
-            string[] defensebot = {
-            "defensebot",
-            };
-
-            string[][] monsters = {
-                hope, randos,
-                crawler, mudraptor, mantis, hammerheadspawn, swarmfeeder, huskcontainer, 
-                husk, small, aggressive, thresher, baby, spineling,
-                cell, alien, defensebot
-                
-                //hope, swarmfeeder, huskcontainer, baby, defensebot
-                //xen, 
-                //survivator,
-                //soma,
-                //deadspace,
-                //improved,
-                //extended, monsterpack, hidden,
-                //othercreature, undersea, 
-                // xanhusk, xancreature, xeno,
-            };
-
-            string[] monsternames = {
-                "hopes and dreams of a lost generation", "random monsters",
-                "crawlers", "mudraptors", "mantids", "hammerhead spawn", "swarmfeeders", "huskcontainers", 
-                "husk", "small monsters", "aggressive monsters", "threshers", "baby monsters", "spinelings",
-                "cells", "aliens", "defense bots",
-                
-                //"hopes and dreams of a lost generation", "swarm parasites", "husked containers", "baby monsters", "defense bots",
-                //"xen monsters", 
-                //"Survivator fish",
-                //"SOMA monsters",
-                //"Deadspace monsters",
-                //"Improved husk",
-                //"Extended monsters", "Monsterpack monsters", "Hidden deep monsters",
-                // "Other creatures", "Undersea horrors", 
-                //"XAN husk", "XAN creatures","Xenomorphs", 
+            Dictionary<string, float> moloch = new Dictionary<string, float>
+            {
+                { "molochblack", 1f },
+                { "moloch_m", 2f },
+                { "moloch", 3f },
+                { "legacymoloch", 4f },
+                { "molochbaby", 200f },
 
             };
+
+            Dictionary<string, float> husk = new Dictionary<string, float>
+            {
+                { "carrier", 1f },
+                { "husk", 10f },
+                { "humanhusk", 20f },
+                { "legacyhusk", 30f },
+                { "huskcontainer", 40f },
+            };
+
+            Dictionary<string, float> mantis = new Dictionary<string, float>
+            {
+                { "mantis", 1f },
+                { "legacycrawler", 20f },
+            };
+
+            Dictionary<string, float> thresher = new Dictionary<string, float>
+            {
+                { "tigerthresher", 1f },
+                { "tigerthresher_hatchling", 5f },
+            };
+
+            Dictionary<string, float> spineling = new Dictionary<string, float>
+            {
+                { "spineling_giant", 1f },
+                { "spineling", 50f },
+            };
+
+            Dictionary<string, float> cell = new Dictionary<string, float>
+            {
+                { "leucocyte", 1f },
+                { "terminalcell", 10f },
+            };
+
+            Dictionary<string, float> swarmfeeder = new Dictionary<string, float>
+            {
+                { "swarmfeeder", 1f },
+            };
+
+            Dictionary<string, float> defensebot = new Dictionary<string, float>
+            {
+                { "defensebot", 1f },
+            };
+
+            Dictionary<string, float> deep = new Dictionary<string, float>
+            {
+                { "doomworm", 0.1f },
+                { "jove", 0.2f },
+                { "cyborgworm", 0.3f },
+                { "endworm", 0.4f },
+                { "legacyendworm", 0.5f },
+                { "watcher", 0.6f },
+                { "charybdis", 0.7f },
+                { "portalguardian", 0.8f },
+                { "legacycharybdis", 0.9f },
+                { "charybdisold", 0.10f },
+                { "legacywatcher", 0.11f },
+                { "coelanth", 0.12f },
+            };
+
+            alien.ToList().ForEach(x => deep[x.Key] = x.Value);
+            baby.ToList().ForEach(x => deep[x.Key] = x.Value);
+            crawler.ToList().ForEach(x => deep[x.Key] = x.Value);
+            mudraptor.ToList().ForEach(x => deep[x.Key] = x.Value);
+            hammerhead.ToList().ForEach(x => deep[x.Key] = x.Value);
+            moloch.ToList().ForEach(x => deep[x.Key] = x.Value);
+            husk.ToList().ForEach(x => deep[x.Key] = x.Value);
+            mantis.ToList().ForEach(x => deep[x.Key] = x.Value);
+            thresher.ToList().ForEach(x => deep[x.Key] = x.Value);
+            spineling.ToList().ForEach(x => deep[x.Key] = x.Value);
+            cell.ToList().ForEach(x => deep[x.Key] = x.Value);
+            swarmfeeder.ToList().ForEach(x => deep[x.Key] = x.Value);
+            defensebot.ToList().ForEach(x => deep[x.Key] = x.Value);
+
+            List<(string Name, float Probability, Dictionary<string, float> MonsterData)> monsterGroups = new List<(string, float, Dictionary<string, float>)>();
+            monsterGroups.Add(("eremite eternals", 4f, alien));
+            monsterGroups.Add(("tiny terrors", 12f, baby));
+            monsterGroups.Add(("chasm lurkers", 7f, crawler));
+            monsterGroups.Add(("murkland predators", 6f, mudraptor));
+            monsterGroups.Add(("hulking hammers", 5f, hammerhead));
+            monsterGroups.Add(("infernal titans", 2f, moloch));
+            monsterGroups.Add(("thalamus horrors", 13f, husk));
+            monsterGroups.Add(("chromatic carnivores", 6f, mantis));
+            monsterGroups.Add(("vortex vipers", 8f, thresher));
+            monsterGroups.Add(("jeweled spinners", 3f, spineling));
+            monsterGroups.Add(("genetic anomalies", 14f, cell));
+            monsterGroups.Add(("nectar devourers", 11f, swarmfeeder));
+            monsterGroups.Add(("autonomous vehicles", 10f, defensebot));
+            monsterGroups.Add(("chthonic abominations", 1f, deep));
+
+            //  Calculate the total sum of spawn chances to get the normalization factor
+            float totalMonsterGroupChance = monsterGroups.Sum(group => group.Item2);
 
             float mapTop = (float)(Submarine.MainSub.WorldPosition.Y + Submarine.MainSub.Borders.Height * 0.5);
             int counter = 0;
-            int timer = 90;
+            int timer = 0;
 
             GameMain.Server.SendChatMessage("Monsters have started spawning. Press R for creature attack. " +
-                "If you're lost, type !suicide to respawn. Type !findcoal or !findsep to find the enemy sub. " +
+                "If you're lost, type !suicide to respawn. Type !enemy to find the nearest enemy. " +
                 "Try !help to learn more.", ChatMessageType.Error);
 
             //(client.AccountInfo.AccountId.TryUnwrap(out var accountId)
@@ -3191,11 +2813,8 @@ namespace Barotrauma.Networking
 
             while (GameStarted)
             {
-
-                yield return new WaitForSeconds(5);
+                if (counter == 0) { timer = rnd.Next(3) * 30 + 90; }
                 counter += 5;
-
-                if (counter == 0) { timer = rnd.Next(3) * 60 + 90; }
 
                 if (counter % 30 == 0)
                 {
@@ -3213,9 +2832,14 @@ namespace Barotrauma.Networking
                         WayPoint respawnPoint = WayPoint.GetRandom(SpawnType.Human, null, respawnSub);
                         CharacterInfo charInfo = new CharacterInfo(CharacterPrefab.HumanSpeciesName, name: readyPlayer.Name, null);
                         Character respawnChar = Character.Create(charInfo, respawnPoint.WorldPosition, ToolBox.RandomSeed(8));
+                        readyPlayer.TeamID = respawnTeam;
                         respawnChar.TeamID = respawnTeam;
                         respawnChar.GiveJobItems(respawnPoint);
+                        respawnChar.GiveIdCardTags(respawnPoint);
+                        respawnChar.Info.InventoryData = new XElement("inventory");
                         respawnChar.Info.StartItemsGiven = true;
+                        respawnChar.SaveInventory();
+
                         GameMain.Server.SetClientCharacter(readyPlayer, respawnChar);
                         GameMain.Server.SendChatMessage(readyPlayer.Name + " joined the game on the side of " + respawnChar.TeamID + "!", ChatMessageType.Error);
                         oldPlayers.Add(readyPlayer.AccountId.ToString());
@@ -3224,32 +2848,33 @@ namespace Barotrauma.Networking
                     }
                 }
 
+                yield return new WaitForSeconds(5);
+
                 string names = "";
-                if (counter == timer)
+                if (counter > timer)
                 {
                     counter = 0;
 
                     if (connectedClients.Any(c => (c.Character?.IsDead ?? true) && c.InGame))
                     {
-                        
                         int rays = 0;
+                        string selectedNameGroup = null;
+                        Dictionary<string, float> selectedMonsterGroup = null;
+
                         List<Submarine> subs = new List<Submarine> { Submarine.MainSub };
                         if (Submarine.MainSubs[1] != null) { subs.Add(Submarine.MainSubs[1]); }
                         List<Submarine> shut = Submarine.Loaded.Where(s => connectedClients.Any(c => (c.Character?.IsHuman ?? true) && (!c.Character?.IsDead ?? true) &&
                         Vector2.Distance(s.WorldPosition, (c.Character?.WorldPosition ?? Vector2.Zero)) < Submarine.MainSub.Borders.Width)).ToList();
                         if (shut != null) { subs.AddRange(shut); }
                         int totalSub = subs.Count();
-
                     START:
-
                         Vector2 monsterSpawn = new Vector2();
                         Vector2 raya = new Vector2();
                         Vector2 rayb = new Vector2();
                         Vector2 goPos = Vector2.Zero;
 
-                        int monsterIndex = rnd.Next(totalSub);
-                        Submarine monsterSub = subs[monsterIndex];
-                        
+                        Submarine monsterSub = subs[rnd.Next(totalSub)];
+
                         double rndx = rnd.NextDouble();
                         double rndy = rnd.NextDouble();
                         bool negx = Convert.ToBoolean(rnd.Next(2));
@@ -3275,7 +2900,7 @@ namespace Barotrauma.Networking
                         rayb.X = monsterSpawn.X + rayx;
                         Vector2 rayasim = FarseerPhysics.ConvertUnits.ToSimUnits(raya);
                         Vector2 raybsim = FarseerPhysics.ConvertUnits.ToSimUnits(rayb);
-                        int index1 = rnd.Next(1, monsters.Length);
+
                         if (rays < 20)
                         {
                             yield return new WaitForSeconds(2);
@@ -3284,11 +2909,24 @@ namespace Barotrauma.Networking
                             {
                                 goto START;
                             }
+              
+                            // Randomly select a monster group
+                            float randomGroupValue = (float)rnd.NextDouble() * totalMonsterGroupChance;
+                            float accumulatedGroupChance = 0.0f;
+                            foreach (var group in monsterGroups)
+                            {
+                                accumulatedGroupChance += group.Item2;
+                                if (randomGroupValue <= accumulatedGroupChance)
+                                {
+                                    selectedNameGroup = group.Item1;
+                                    selectedMonsterGroup = group.Item3;
+                                    break;
+                                }
+                            }
                             goPos = monsterSpawn;
                         }
                         else
                         {
-                            index1 = 0;
                             goPos = monsterSub.WorldPosition;
                         }
 
@@ -3296,22 +2934,14 @@ namespace Barotrauma.Networking
                         string dir = GetCard(GetAngle(angleRadians));
                         names = "";
 
-                        /*
-                        WayPoint monsterSpawn = WayPoint.GetRandom(SpawnType.Human, null, Submarine.MainSub);
-                        Vector2 goPos = monsterSpawn.WorldPosition;
-                        float angleRadians = GetRadian(monsterSpawn.WorldPosition, Submarine.MainSub.WorldPosition);
-                        string dist = (Vector2.Distance(monsterSpawn.WorldPosition, Submarine.MainSub.WorldPosition) / 100).ToString("0.00");
-                        string dir = GetCard(GetAngle(angleRadians));
-                        names = "";
-                        int index1 = rnd.Next(0, monsters.Length);
-                        */
-
+                        float totalMonsterChance = selectedMonsterGroup.Values.Sum();
                         List<string> doneMonsters = new List<string>();
                         Client readyMonster = connectedClients.Find(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame && !doneMonsters.Contains(c.AccountId.ToString()));
                         while (readyMonster != null && GameStarted)
                         {
-                            if (index1 == 0)
+                            if (selectedNameGroup == null)
                             {
+                                selectedNameGroup = "hopes and dreams of a lost generation";
                                 names = names + readyMonster.Name + ", ";
                                 doneMonsters.Add(readyMonster.AccountId.ToString());
                                 yield return new WaitForSeconds(2);
@@ -3319,8 +2949,20 @@ namespace Barotrauma.Networking
                             }
                             else
                             {
-                                int index2 = rnd.Next(monsters[index1].Length);
-                                GameMain.Server.SetClientCharacter(readyMonster, SpawnCreature(monsters[index1][index2], goPos));
+                                float randomMonsterValue = (float)rnd.NextDouble() * totalMonsterChance;
+                                float accumulatedMonsterChance = 0.0f;
+                                string selectedMonster = null;
+                                foreach (var kvp in selectedMonsterGroup)
+                                {
+                                    accumulatedMonsterChance += kvp.Value;
+                                    if (randomMonsterValue <= accumulatedMonsterChance)
+                                    {
+                                        selectedMonster = kvp.Key;
+                                        break;
+                                    }
+                                }
+                                GameMain.Server.SetClientCharacter(readyMonster, SpawnCreature(selectedMonster, goPos));
+                                readyMonster.TeamID = CharacterTeamType.None;
                                 SendDirectChatMessage("You hear something " + dist + " meters away to the " + dir + " direction!",
                                 readyMonster, ChatMessageType.MessageBox);
                                 names = names + readyMonster.Name + ", ";
@@ -3333,7 +2975,7 @@ namespace Barotrauma.Networking
                         {
                             names = names.TrimEnd(',', ' ');
                             GameMain.Server.SendChatMessage("The soul's of " + names + " have entered the body of a nearby group of "
-                                + monsternames[index1] + "!", ChatMessageType.Error);
+                                + selectedNameGroup + "!", ChatMessageType.Error);
                         }
                     }
                 }
@@ -4090,23 +3732,27 @@ namespace Barotrauma.Networking
                             if (!senderClient.Character.IsDead)
                             {
                                 senderClient.Character.Kill(CauseOfDeathType.Suffocation, null);
+                                senderCharacter.TeamID = CharacterTeamType.None;
                                 GameMain.Server.SendChatMessage(senderClient.Name + " has committed suicide. Shameful display!", ChatMessageType.Error);
                             }
                             else { SendDirectChatMessage("You're already dead!", senderClient, ChatMessageType.MessageBox); }
                             break;
-                        case "findcoal":
-                            string cdist = (Vector2.Distance(senderClient.Character.WorldPosition, Submarine.MainSub.WorldPosition) / 100).ToString("0.00");
-                            string cdir = GetDirection(senderClient.Character.WorldPosition, Submarine.MainSub.WorldPosition);
-                            SendDirectChatMessage("Coalition submarine has been detected " + cdist + " meters to the " + cdir + "!", senderClient, ChatMessageType.MessageBox);
-                            break;
-                        case "findsep":
-                            if (Submarine.MainSubs[1] != null)
+                        case "enemy":
+                            if (!senderClient.Character.IsDead)
                             {
-                                string sdist = (Vector2.Distance(senderClient.Character.WorldPosition, Submarine.MainSubs[1].WorldPosition) / 100).ToString("0.00");
-                                string sdir = GetDirection(senderClient.Character.WorldPosition, Submarine.MainSubs[1].WorldPosition);
-                                SendDirectChatMessage("Separatist submarine has been detected " + sdist + " meters to the " + sdir + "!", senderClient, ChatMessageType.MessageBox);
+                                List<Character> enemies = Character.CharacterList.Where(c => (c.IsHuman == true) && (c.IsDead == false) && (c.TeamID != senderClient.Character.TeamID)).ToList();
+                                if (enemies.Any())
+                                {
+                                    Character enemy = enemies.Aggregate((min, current) => Vector2.Distance(current.WorldPosition, senderClient.Character.WorldPosition) < Vector2.Distance(min.WorldPosition, senderClient.Character.WorldPosition) ? current : min);
+                                    string cdist = (Vector2.Distance(senderClient.Character.WorldPosition, enemy.WorldPosition) / 100).ToString("0.00");
+                                    string cdir = GetDirection(senderClient.Character.WorldPosition, enemy.WorldPosition);
+                                    string alert = "The enemy has been detected " + cdist + " meters to the " + cdir + "!";
+                                    if (float.Parse(cdist) < 30) { alert = "The enemy is less than 30 away! Strike now!"; };
+                                    SendDirectChatMessage(alert, senderClient, ChatMessageType.MessageBox);
+                                }
+                                else { SendDirectChatMessage("No enemy exists!", senderClient, ChatMessageType.MessageBox); }
                             }
-                            else { SendDirectChatMessage("No separatist submarine exists!", senderClient, ChatMessageType.MessageBox); }
+                            else { SendDirectChatMessage("You're dead!", senderClient, ChatMessageType.MessageBox); }
                             break;
                         case "startspec":
                             if (senderClient.SpectateOnly == false)
@@ -4128,18 +3774,47 @@ namespace Barotrauma.Networking
                             break;
                         case "tip":
                             GameMain.Server.SendChatMessage("To learn more about chatbox commands, type !help (don't forget the exclamation) in the chatbox. " +
-                                "Press F to attack as monster by default. If you're lost, type !suicide to respawn. Type !findcoal or !findsep to find the enemy sub.", ChatMessageType.Error);
+                                "Press R to attack as monster by default. If you're lost, type !suicide to respawn. Type !enemy to find the nearest enemy player.", ChatMessageType.Error);
+                            break;
+                        case "ff":
+                            GameMain.Server.SendChatMessage("Remember! Coalition faces right. Separatists face left. Do not friendly fire your own subs.", ChatMessageType.Error);
+                            break;
+                        case "idcard":
+                            List<WayPoint> subPoints = Submarine.MainSub.GetWaypoints(true);
+                            List<string> idtags = new List<string>();
+                            foreach (WayPoint sp in subPoints)
+                            {
+                                foreach (string tag in sp.IdCardTags)
+                                {
+                                    idtags.Add(tag);
+                                }
+                            }
+                            List<Client> players = connectedClients.Where(c => c.Character?.IsHuman != false && c.InGame && c.Character != null && c.Character?.IsDead != true).ToList();
+                            foreach (Client c in players) 
+                            {
+                                var idCard = c.Character.Inventory.FindItemByTag("identitycard".ToIdentifier());
+                                foreach (string s in idtags)
+                                {
+                                    idCard.AddTag(s);
+                                }
+                                if (GameMain.NetworkMember is { IsServer: true })
+                                {
+                                    GameMain.NetworkMember.CreateEntityEvent(idCard, new Item.ChangePropertyEventData(idCard.SerializableProperties[nameof(idCard.Tags).ToIdentifier()], idCard));
+                                }
+                            }
+                            SendDirectChatMessage("Added idcard tags", senderClient, ChatMessageType.MessageBox);
                             break;
                         case "help":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
                                 SendDirectChatMessage(
                                 "!suicide -- Kills your character. Use if lost or stuck.\n" +
-                                "!findcoal -- Get the direction of the coalition submarine.\n" +
-                                "!findsep -- Get the direction of the separatist submarine.\n" +
+                                "!enemy -- Get the direction of the nearest enemy.\n" +
                                 "!stopspec -- Leave spectator group to allow becoming a monster or human\n" +
                                 "!startspec -- Join spectator group to prevent becoming a monster or human\n" +
                                 "!tip -- Send helpful hints for new players\n" +
+                                "!ff -- Remind players of friendly fire\n" +
+                                "!idcard -- Add access to all players\n" +
                                 "!respawn -- Add any players who are not alive and not in spec team\n" +
                                 "!removeop -- Remove dangerous and unbalanced items\n" +
                                 "!removesteroid -- Remove anabolic steroids\n" +
@@ -4163,8 +3838,7 @@ namespace Barotrauma.Networking
                             {
                                 SendDirectChatMessage(
                                 "!suicide -- Kills your character. Use if lost or stuck.\n" +
-                                "!findcoal -- Get the direction of the coalition submarine.\n" +
-                                "!findsep -- Get the direction of the separatist submarine.\n" +
+                                "!enemy -- Get the direction of the nearest enemy.\n" +
                                 "!stopspec -- Leave spectator group to allow becoming a monster or human\n" +
                                 "!startspec -- Join spectator group to prevent becoming a monster or human\n", senderClient, ChatMessageType.MessageBox);
                             }
@@ -4188,9 +3862,24 @@ namespace Barotrauma.Networking
                                         WayPoint respawnPoint = WayPoint.GetRandom(SpawnType.Human, null, respawnSub);
                                         CharacterInfo charInfo = new CharacterInfo(CharacterPrefab.HumanSpeciesName, name: c.Name, null);
                                         Character respawnChar = Character.Create(charInfo, respawnPoint.WorldPosition, ToolBox.RandomSeed(8));
+                                        c.TeamID = respawnTeam;
                                         respawnChar.TeamID = respawnTeam;
                                         respawnChar.GiveJobItems(respawnPoint);
+                                        respawnChar.GiveIdCardTags(respawnPoint);
+                                        respawnChar.Info.InventoryData = new XElement("inventory");
                                         respawnChar.Info.StartItemsGiven = true;
+                                        respawnChar.SaveInventory();
+
+                                        // Correct way to spawn
+                                        //Character spawnedCharacter = Character.Create(characterInfos[i], spawnWaypoints[i].WorldPosition, characterInfos[i].Name, isRemotePlayer: false, hasAi: true);
+                                        //spawnedCharacter.TeamID = teamID;
+                                        //spawnedCharacter.GiveJobItems(mainSubWaypoints[i]);
+                                        //spawnedCharacter.GiveIdCardTags(mainSubWaypoints[i]);
+                                        //spawnedCharacter.Info.InventoryData = new XElement("inventory");
+                                        //spawnedCharacter.Info.StartItemsGiven = true;
+                                        //spawnedCharacter.SaveInventory();
+                                        //spawnedCharacter.LoadTalents();
+                                        
                                         GameMain.Server.SetClientCharacter(c, respawnChar);
                                         GameMain.Server.SendChatMessage(c.Name + " joined the game on the side of " + respawnChar.TeamID + "!", ChatMessageType.Error);
                                     }
@@ -4205,7 +3894,7 @@ namespace Barotrauma.Networking
                             {
                                 string[] banned = { "tonicliquid", "steroids", "hyperzine", "nucleardepthcharge",
                                         "nuclearshell", "fraggrenade", "incendiumgrenade", "coilgunammoboxexplosive",
-                                        "ic4block", "c4block", "uex", "compoundn", "volatilecompoundn", "nitroglycerin"};
+                                        "ic4block", "c4block", "uex", "compoundn", "volatilecompoundn", "nitroglycerin", };
                                 int count = 0;
                                 foreach (Item itm in Item.ItemList)
                                 {
@@ -4221,7 +3910,7 @@ namespace Barotrauma.Networking
                         case "removesteroid":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
-                                string[] banned = { "tonicliquid", "steroids", "hyperzine" };
+                                string[] banned = { "tonicliquid", "steroids", "hyperzine", "antidama1", "antidama2", };
                                 int count = 0;
                                 foreach (Item itm in Item.ItemList)
                                 {
@@ -4238,7 +3927,7 @@ namespace Barotrauma.Networking
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
                                 string[] banned = { "grenadelauncher", "flamer", "weldingtool", "plasmacutter", "screwdriver",
-                                        "ic4block", "c4block", "uex", "compoundn", "volatilecompoundn", "nitroglycerin" };
+                                        "ic4block", "c4block", "uex", "compoundn", "volatilecompoundn", "nitroglycerin", };
                                 int count = 0;
                                 foreach (Item itm in Item.ItemList)
                                 {
@@ -4355,6 +4044,9 @@ namespace Barotrauma.Networking
                             }
                             else { SendDirectChatMessage("You don't have permission to add zombies!", senderClient, ChatMessageType.MessageBox); }
                             break;
+                        case "pirate":
+                            //item.AddTag("id_pirate");
+                            break;
                         case "startvoip":
                             if (senderClient.HasPermission(ClientPermissions.Ban))
                             {
@@ -4455,32 +4147,40 @@ namespace Barotrauma.Networking
                         case "alive":
                             if (connectedClients.Any())
                             {
-                                string alive = "";
-                                foreach (Client c in connectedClients)
-                                {
-                                    string status = "";
-                                    status = status + c.Name;
-                                    if (c.Character == null)
-                                    {
-                                        status = status + " oooo ";
-                                    }
-                                    else if (c.Character?.IsDead ?? true)
-                                    {
-                                        status = status + " ---- ";
-                                    }
-                                    else
-                                    {
-                                        status = status + " ++++ ";
-                                    }
-                                    status = status + " " + $"{c.Character?.SpeciesName ?? "None"}";
-                                    status = status + " " + $"{c.TeamID.ToString() ?? "None"}";
-                                    alive = alive + status + "\n";
+                                var orderedTeams = connectedClients
+                                    .GroupBy(c => c.TeamID) // Group clients by their TeamID
+                                    .OrderBy(g => g.Key);   // Sort the groups by TeamID
 
+                                string alive = "";
+                                foreach (var teamGroup in orderedTeams)
+                                {
+                                    foreach (Client c in teamGroup.OrderBy(c => c.Name)) // Sort clients within each group by Name
+                                    {
+                                        string status = "";
+                                        if (c.Character == null)
+                                        {
+                                            status = status + "o ";
+                                        }
+                                        else if (c.Character?.IsDead ?? true)
+                                        {
+                                            status = status + "- ";
+                                        }
+                                        else
+                                        {
+                                            status = status + "+ ";
+                                        }
+                                        status = status + " " + $"{c.TeamID.ToString() ?? "None"}";
+                                        status = status + " " + c.Name.Substring(0, Math.Min(c.Name.Length, 15)); 
+                                        status = status + " " + $"{c.Character?.SpeciesName.ToString().Substring(0, Math.Min(c.Character.SpeciesName.ToString().Length, 15)) ?? "None"}"; 
+                                        alive = alive + status + "\n";
+                                    }
                                 }
                                 SendDirectChatMessage(alive, senderClient, ChatMessageType.MessageBox);
                             }
-                            else 
-                            { SendDirectChatMessage("No players in game!", senderClient, ChatMessageType.MessageBox); }
+                            else
+                            {
+                                SendDirectChatMessage("No players in game!", senderClient, ChatMessageType.MessageBox);
+                            }
                             break;
                     }
                 }
@@ -5280,7 +4980,7 @@ namespace Barotrauma.Networking
                 if (remainingJobs.None())
                 {
                     DebugConsole.ThrowError("Failed to assign a suitable job for bot \"" + c.Name + "\" (all jobs already have the maximum numbers of players). Assigning a random job...");
-                    #warning TODO: is this randsync correct?
+#warning TODO: is this randsync correct?
                     c.Job = Job.Random(Rand.RandSync.ServerAndClient);
                     assignedPlayerCount[c.Job.Prefab]++;
                 }

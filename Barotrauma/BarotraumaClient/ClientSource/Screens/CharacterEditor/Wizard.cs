@@ -36,7 +36,7 @@ namespace Barotrauma.CharacterEditor
             SourceAnimations = animations;
             name = character.SpeciesName;
             isHumanoid = character.Humanoid;
-            canEnterSubmarine = ragdoll.CanEnterSubmarine;
+            canEnterSubmarine = ragdoll.CanEnterSubmarine; ;
             canWalk = ragdoll.CanWalk;
             texturePath = ragdoll.Texture;
             if (string.IsNullOrEmpty(texturePath) && name != CharacterPrefab.HumanSpeciesName)

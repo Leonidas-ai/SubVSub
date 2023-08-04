@@ -141,7 +141,7 @@ namespace Barotrauma
             get { return Character.IsDead || (Vitality <= 0.0f && !Character.HasAbilityFlag(AbilityFlags.AlwaysStayConscious)); }
         }
 
-        public float PressureKillDelay { get; private set; } = 5.0f;
+        public float PressureKillDelay { get; private set; } = 0.0f;
 
         private float vitality;
         public float Vitality 

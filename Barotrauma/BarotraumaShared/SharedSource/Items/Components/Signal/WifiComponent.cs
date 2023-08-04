@@ -167,7 +167,7 @@ namespace Barotrauma.Items.Components
         public bool CanTransmit(WifiComponent sender)
         {
             if (sender == null || sender.channel != channel) { return false; }
-            if (sender.TeamID != TeamID && !AllowCrossTeamCommunication) { return false; }
+            //if (sender.TeamID != TeamID && !AllowCrossTeamCommunication) { return false; }
             if (Vector2.DistanceSquared(item.WorldPosition, sender.item.WorldPosition) > sender.range * sender.range) { return false; }
             return HasRequiredContainedItems(user: null, addMessage: false);
         }

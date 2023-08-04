@@ -977,7 +977,7 @@ namespace Barotrauma
 
             if (newHull == currentHull) { return; }
 
-            if (!CanEnterSubmarine || (character.AIController != null && !character.AIController.CanEnterSubmarine))
+            if ((character.AIController != null && !character.AIController.CanEnterSubmarine))
             {
                 //character is inside the sub even though it shouldn't be able to enter -> teleport it out
 
@@ -1251,7 +1251,7 @@ namespace Barotrauma
                 }
             }
 
-            UpdateHullFlowForces(deltaTime);
+            //UpdateHullFlowForces(deltaTime);
 
             if (currentHull == null ||
                 currentHull.WaterVolume > currentHull.Volume * 0.95f ||
@@ -1510,7 +1510,7 @@ namespace Barotrauma
             }
 
             //throwing conscious/moving characters around takes more force -> double the flow force
-            if (character.CanMove) { flowForce *= 0.0f; }
+            if (character.CanMove) { flowForce *= 2.0f; }
             flowForce *= 1 - Math.Clamp(character.GetStatValue(StatTypes.FlowResistance), 0f, 1f);
 
             float flowForceMagnitude = flowForce.Length();

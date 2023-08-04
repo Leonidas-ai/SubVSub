@@ -324,7 +324,7 @@ namespace Barotrauma
                 }
                 else if (impact.Target.Body.UserData is Submarine otherSub)
                 {
-                    HandleSubCollision(impact, otherSub);
+                    //HandleSubCollision(impact, otherSub);
                 }
                 else if (impact.Target.Body.UserData is Limb limb)
                 {

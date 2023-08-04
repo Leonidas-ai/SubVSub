@@ -19,15 +19,15 @@ namespace Barotrauma.Networking
         public const float MaxHealthUpdateInterval = 2.0f;
         public const float MaxHealthUpdateIntervalDead = 10.0f;
 
-        public const float HighPrioCharacterPositionUpdateDistance = 1000.0f;
-        public const float LowPrioCharacterPositionUpdateDistance = 10000.0f;
+        public const float HighPrioCharacterPositionUpdateDistance = 500.0f;
+        public const float LowPrioCharacterPositionUpdateDistance = 5000.0f;
         public const float HighPrioCharacterPositionUpdateInterval = 0.0f;
-        public const float LowPrioCharacterPositionUpdateInterval = 1.0f;
+        public const float LowPrioCharacterPositionUpdateInterval = 2.0f;
 
         //this should be higher than LowPrioCharacterPositionUpdateInterval,
         //otherwise the clients may freeze characters even though the server hasn't actually stopped sending position updates
-        public const float FreezeCharacterIfPositionDataMissingDelay = 2.0f;
-        public const float DisableCharacterIfPositionDataMissingDelay = 3.5f;
+        public const float FreezeCharacterIfPositionDataMissingDelay = 4.0f;
+        public const float DisableCharacterIfPositionDataMissingDelay = 6f;
 
         public const float DeleteDisconnectedTime = 20.0f;
 
@@ -35,7 +35,7 @@ namespace Barotrauma.Networking
         public const float LevelObjectUpdateInterval = 0.5f;
         public const float HullUpdateInterval = 0.5f;
         public const float SparseHullUpdateInterval = 5.0f;
-        public const float HullUpdateDistance = 20000.0f;
+        public const float HullUpdateDistance = 10000.0f;
 
         public const int MaxEventPacketsPerUpdate = 4;
 
@@ -52,12 +52,12 @@ namespace Barotrauma.Networking
         /// <summary>
         /// If a client hasn't received an event that has been succesfully sent to someone within this time, they get kicked
         /// </summary>
-        public const float OldReceivedEventKickTime = 10.0f;
+        public const float OldReceivedEventKickTime = 20.0f;
 
         /// <summary>
         /// If a client hasn't received an event after this time, they get kicked
         /// </summary>
-        public const float OldEventKickTime = 30.0f;
+        public const float OldEventKickTime = 60.0f;
 
         /// <summary>
         /// Interpolates the positional error of a physics body towards zero.
